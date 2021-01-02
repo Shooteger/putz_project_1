@@ -1,0 +1,10 @@
+Used links for debugging errors and doing research:
+
+https://www.boost.org/users/license.html
+https://en.cppreference.com/w/
+https://stackoverflow.com/questions/121162/what-does-the-explicit-keyword-mean
+https://en.cppreference.com/w/cpp/language/explicit
+https://stackoverflow.com/questions/10632251/undefined-reference-to-template-function
+https://en.cppreference.com/w/
+https://online.visual-paradigm.com
+http://cpppatterns.com/patterns/pass-values-between-thread.html

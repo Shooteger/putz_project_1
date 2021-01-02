@@ -1,7 +1,6 @@
 # Prerequisites
 *.d
 build/
-*.txt
 *.doc
 *.pdf
 .vscode
