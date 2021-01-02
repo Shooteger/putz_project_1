@@ -2,7 +2,7 @@
 project('mlt3send', 'cpp',
         license : ['Boost'],
         version : '0.1',
-        default_options : ['cpp_std=c++17', 'warning_level=3', 'werror=true'])
+        default_options : ['cpp_std=c++17', 'warning_level=3'])#, 'werror=true'])
 
 thread_dep = dependency('threads')
 
@@ -39,7 +39,7 @@ add_global_arguments('-I' + get_option('spdlog_include_dir'), language : 'cpp')
 # subdir('SUBDIR1')
 
 inc_dir = include_directories('include')
-src = ['src/main.cpp']
+src = ['src/main.cpp', 'src/queue.cpp']
 #protobuf: src = ['src/main.cpp', generated]
 
 executable('mlt3send',

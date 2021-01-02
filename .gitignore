@@ -1,5 +1,9 @@
 # Prerequisites
 *.d
+build/
+*.txt
+*.doc
+*.pdf
 
 # Compiled Object files
 *.slo
@@ -30,3 +34,5 @@
 *.exe
 *.out
 *.app
+
+
