@@ -15,24 +15,39 @@ template <typename T>
 class Queue {
     public:
         Queue() {};
-        Queue(const Queue& other) { //only one thread can write at any point
+        Queue(const Queue& other) { //only one thread can write at any point of interaction
             std::lock_guard lock(mtx);
             data_queue = other.data_queue;
         } 
         
-        void push(T value) {
+        //for pushing a new element, locking queue, than pushing and notify
+        void push(T value) { 
             std::lock_guard lock(mtx);
             data_queue.push(value);
             data_notify.notify_one();
         }
         
+        //waits until it gets notified, so that it can start operating
+        //if queue is not empty, it will copy the front value of the qeue and then pop
         void pop_and_wait(T& value) {
-            std::unique_lock lock(mtx);
+            std::unique_lock lock(mtx); //unique_lock and not lock_guard because more flexibility if data_queue is empty -> wait()
             data_notify.wait(lock, [this]{return !data_queue.empty();});
             value = data_queue.front();
             data_queue.pop();
         }
 
+        //waits until it gets notified, so that it can start operating
+        //if queue is not empty, it will copy the front value of the qeue and then pop
+        //returns a pointer to poped element
+        std::shared_ptr<const T> pop_and_wait() {
+            std::unique_lock lock(mtx); //unique_lock and not lock_guard because more flexibility if data_queue is empty -> wait()
+            data_notify.wait(lock, [this]{return !data_queue.empty();});
+            std::shared_ptr<const T> res(std::make_shared<const T>(data_queue.front()));
+            data_queue.pop();
+            return res;
+        }
+
+        //returns 1 of queue is empty, 0 if not
         bool empty() {
             std::lock_guard lock(mtx);
             return data_queue.empty();

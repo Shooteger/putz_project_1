@@ -22,7 +22,10 @@ int main() {
     //receiver.join();
     
     cout << q.empty() << "\n";
-    q.push(1);
-    q.push(2);
+    q.push(10);
+    q.push(20);
+    cout << q.empty() << "\n";
+    cout << "Pop: " << *q.pop_and_wait() << "\n";
+    cout << "Pop: " << *q.pop_and_wait() << "\n";
     cout << q.empty() << "\n";
 }
