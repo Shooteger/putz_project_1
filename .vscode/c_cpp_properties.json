@@ -3,7 +3,8 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**", "/home/maurice/Documents/"
+
             ],
             "defines": [],
             "compilerPath": "/usr/bin/cpp",

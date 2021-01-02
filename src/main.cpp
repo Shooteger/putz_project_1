@@ -6,8 +6,10 @@
 #include <thread>
 
 #include "queue.h"
+#include "CLI11.hpp"
 
 using namespace std;
+using namespace CLI;
 
 //int main(int argc, char* argv[]) {
 int main() {
@@ -27,4 +29,6 @@ int main() {
     cout << "Pop: " << *q.pop_and_wait() << "\n";
     cout << "Pop: " << *q.pop_and_wait() << "\n";
     cout << q.empty() << "\n";
+
+    App app {"MLT-3 Encoding"};
 }
