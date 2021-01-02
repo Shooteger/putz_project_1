@@ -21,6 +21,8 @@ int main() {
     //sender.join();
     //receiver.join();
     
-    //q.empty();
-    //q.push(1);
+    cout << q.empty() << "\n";
+    q.push(1);
+    q.push(2);
+    cout << q.empty() << "\n";
 }

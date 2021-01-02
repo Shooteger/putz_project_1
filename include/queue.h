@@ -19,9 +19,24 @@ class Queue {
             std::lock_guard lock(mtx);
             data_queue = other.data_queue;
         } 
-        void push(T value);
-        void pop(T& value);
-        bool empty();
+        
+        void push(T value) {
+            std::lock_guard lock(mtx);
+            data_queue.push(value);
+            data_notify.notify_one();
+        }
+        
+        void pop_and_wait(T& value) {
+            std::unique_lock lock(mtx);
+            data_notify.wait(lock, [this]{return !data_queue.empty();});
+            value = data_queue.front();
+            data_queue.pop();
+        }
+
+        bool empty() {
+            std::lock_guard lock(mtx);
+            return data_queue.empty();
+        }
     private:
         mutable std::mutex mtx;
         std::queue<T> data_queue;

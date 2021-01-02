@@ -4,6 +4,7 @@ build/
 *.txt
 *.doc
 *.pdf
+.vscode
 
 # Compiled Object files
 *.slo
