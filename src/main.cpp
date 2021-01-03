@@ -17,7 +17,34 @@ ulong encode(char character_to_encode) {
     return bitset<8>(character_to_encode).to_ulong();
 }
 
+void decode() {
 
+}
+
+vector<ulong> random(string allowed="") {
+    vector<ulong> res;
+    srand((int)time(0));
+	int repeat = (rand() % (126-33)) + 1;   //how often random ascii sign should be repeated
+
+    if (allowed == "") {
+        int i = 0;
+        while(i++ < repeat) {
+            res.push_back((rand() % (126-33)) + 33); //33 is ! and 126 is ~ all between are numbers, special signs or alphabet
+        }
+    } else {
+        vector<ulong> tmp_bitsets;
+        for (size_t i=0; i < allowed.length(); ++i) {
+            tmp_bitsets.push_back(encode(allowed.at(i)));   //get bitset for given ascii signs in allowed
+        }
+
+        int j = 0;
+        while(j++ < repeat) {
+            int random_idx = rand() % tmp_bitsets.size();
+            res.push_back(bitset<8>(tmp_bitsets[random_idx]).to_ullong());    //access random elemnt of the new vector with allowed ascii signs from input
+        }
+    }
+    return res;
+}
 
 int main(int argc, char* argv[]) {
 
@@ -44,6 +71,8 @@ int main(int argc, char* argv[]) {
     App app {"MLT-3 Encoding"};
 
     app.add_option("input_chars", input_chars, "Given input_chars to send over with MLT-3");
+
+    //NOTE ADD WHICH ASCII CHARACTERS ARE ALLOWED! 33 until 129 in dec!
     
     try {
         CLI11_PARSE(app, argc, argv);
@@ -51,20 +80,19 @@ int main(int argc, char* argv[]) {
         cerr << e.what() << "\n";
     }
 
+    // this block is for deleting double characters from input string
+    //START
     sort(input_chars.begin(), input_chars.end()); 
     auto res = unique(input_chars.begin(), input_chars.end());
     input_chars = string(input_chars.begin(), res);
+    //END
 
-    for (size_t i=0; i < input_chars.length(); ++i) {
-        q.push(encode(input_chars.at(i)));
+    auto random_digits = random(input_chars);
+
+    for (size_t i=0; i < random_digits.size(); ++i) {
+        cout << random_digits[i] << "\n";
     }
 
-    cout << input_chars;
-    cout << "\nPop: " << *q.pop_and_wait() << "\n";
-    cout << "Pop: " << *q.pop_and_wait() << "\n";
-    cout << "Pop: " << *q.pop_and_wait() << "\n";
-    cout << "Pop: " << *q.pop_and_wait() << "\n";
-    //cout << "Pop: " << *q.pop_and_wait() << "\n";
-    //cout << "Pop: " << *q.pop_and_wait() << "\n";
     
+        
 }
