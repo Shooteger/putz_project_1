@@ -11,5 +11,4 @@ class MLT3 {
         MLT3(std::string input);
     private:
         std::string input;
-        
 };

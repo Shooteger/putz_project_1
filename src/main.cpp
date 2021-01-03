@@ -13,7 +13,7 @@
 using namespace std;
 using namespace CLI;
 
-ulong encode(char character_to_encode) {
+short encode(char character_to_encode) {
     return bitset<8>(character_to_encode).to_ulong();
 }
 
@@ -21,8 +21,8 @@ void decode() {
 
 }
 
-vector<ulong> random(string allowed="") {
-    vector<ulong> res;
+vector<short> random(string allowed="") {
+    vector<short> res;
     srand((int)time(0));
 	int repeat = (rand() % (126-33)) + 1;   //how often random ascii sign should be repeated
 
@@ -32,7 +32,7 @@ vector<ulong> random(string allowed="") {
             res.push_back((rand() % (126-33)) + 33); //33 is ! and 126 is ~ all between are numbers, special signs or alphabet
         }
     } else {
-        vector<ulong> tmp_bitsets;
+        vector<short> tmp_bitsets;
         for (size_t i=0; i < allowed.length(); ++i) {
             tmp_bitsets.push_back(encode(allowed.at(i)));   //get bitset for given ascii signs in allowed
         }
@@ -48,7 +48,7 @@ vector<ulong> random(string allowed="") {
 
 int main(int argc, char* argv[]) {
 
-    Queue<ulong> q{};
+    Queue<short> q{};
     string input_chars;
 
     //thread sender{[], q.push(1) };
@@ -90,7 +90,8 @@ int main(int argc, char* argv[]) {
     auto random_digits = random(input_chars);
 
     for (size_t i=0; i < random_digits.size(); ++i) {
-        cout << random_digits[i] << "\n";
+        bitset<8> tmp_outp(random_digits[i]);
+        cout << tmp_outp << "\n";
     }
 
     
