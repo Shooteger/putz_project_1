@@ -14,10 +14,13 @@
 using namespace std;
 using namespace CLI;
 
+//for encoding the character if the input string to ascii DEC numbers
 short encode(char character_to_encode) {
     return bitset<8>(character_to_encode).to_ulong();
 }
 
+//returns a random amount from 1 until 127 numbers of random numbers between 33 and 126
+//this are the ASCII character in DEC and all special and alphanumerical character of ASCII
 vector<short> random(string allowed="") {
     vector<short> res;
     srand((int)time(0));
@@ -26,7 +29,7 @@ vector<short> random(string allowed="") {
     if (allowed == "") {
         int i = 0;
         while(i++ < repeat) {
-            res.push_back((rand() % (126-33)) + 33); //33 is ! and 126 is ~ all between are numbers, special signs or alphabet
+            res.push_back((rand() % (126-33)) + 33); //33 is ! and 126 is ~ all between are numbers, special signs or letters
         }
     } else {
         vector<short> tmp_bitsets;
@@ -43,24 +46,24 @@ vector<short> random(string allowed="") {
     return res;
 }
 
+//sets the DataPromise and Future from sender thread, that the receiver thread
+//can pick up the sended data in binary format
 void send_data(promise<vector<bitset<8>>>&& DataPromise, vector<short> data_to_send) {
     vector<bitset<8>> help_vec_tmp;
     for (size_t i=0; i < data_to_send.size(); ++i) {
         help_vec_tmp.push_back((bitset<8> (data_to_send[i])));
-        //cout << help_vec_tmp[i] << "\n";
     }
     DataPromise.set_value(help_vec_tmp);
 }
 
+//sets the DataEncoded Promise and Future, so that the encoded data of the receiver thread can be printed
 void decode(promise<vector<bitset<8>>>&& DataEncoded, vector<bitset<8>> sended_data) {
     vector<bitset<8>> res_encoded;
     for (size_t i=0; i < sended_data.size(); ++i) {
         res_encoded.push_back((bitset<8> (sended_data[i])));
-        //cout << help_vec_tmp[i] << "\n";
     }
     DataEncoded.set_value(res_encoded);
 }
-
 
 int main(int argc, char* argv[]) {
 
