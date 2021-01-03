@@ -52,8 +52,13 @@ void send_data(promise<vector<bitset<8>>>&& DataPromise, vector<short> data_to_s
     DataPromise.set_value(help_vec_tmp);
 }
 
-void decode(promise<vector<bitset<8>>>&& DataEncoded, vector<short> sended_data) {
-
+void decode(promise<vector<bitset<8>>>&& DataEncoded, vector<bitset<8>> sended_data) {
+    vector<bitset<8>> res_encoded;
+    for (size_t i=0; i < sended_data.size(); ++i) {
+        res_encoded.push_back((bitset<8> (sended_data[i])));
+        //cout << help_vec_tmp[i] << "\n";
+    }
+    DataEncoded.set_value(res_encoded);
 }
 
 
@@ -83,14 +88,17 @@ int main(int argc, char* argv[]) {
     input_chars = string(input_chars.begin(), res);
     //END
 
+    //vector with random ascii values between 32 and 126
     auto random_digits = random(input_chars);    
 
     thread sender{send_data, move(DataToSend), random_digits};
     auto binary_sended_data = DataFuture.get();
+
     thread receiver{decode, move(EncodedData), binary_sended_data};
     
-    for (size_t i=0; i < binary_sended_data.size(); ++i) {
-        cout << binary_sended_data[i] << "\n";
+    auto encoded_ascii_data = EncodedFuture.get();
+    for (size_t i=0; i < encoded_ascii_data.size(); ++i) {
+        cout << encoded_ascii_data[i] << "\n";
     }
 
     sender.join();
