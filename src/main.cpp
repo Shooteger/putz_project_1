@@ -6,6 +6,7 @@
 #include <thread>
 #include <bitset>
 #include <bits/stdc++.h>
+#include <future>
 
 #include "queue.h"
 #include "CLI11.hpp"
@@ -15,10 +16,6 @@ using namespace CLI;
 
 short encode(char character_to_encode) {
     return bitset<8>(character_to_encode).to_ulong();
-}
-
-void decode() {
-
 }
 
 vector<short> random(string allowed="") {
@@ -46,39 +43,38 @@ vector<short> random(string allowed="") {
     return res;
 }
 
+void send_data(promise<vector<bitset<8>>>&& DataPromise, vector<short> data_to_send) {
+    vector<bitset<8>> help_vec_tmp;
+    for (size_t i=0; i < data_to_send.size(); ++i) {
+        help_vec_tmp.push_back((bitset<8> (data_to_send[i])));
+        //cout << help_vec_tmp[i] << "\n";
+    }
+    DataPromise.set_value(help_vec_tmp);
+}
+
+void decode(promise<vector<bitset<8>>>&& DataEncoded, vector<short> sended_data) {
+
+}
+
+
 int main(int argc, char* argv[]) {
 
     Queue<short> q{};
     string input_chars;
+    //future and promise for sending data
+    promise<vector<bitset<8>>> DataToSend;
+    future<vector<bitset<8>>> DataFuture = DataToSend.get_future();
 
-    //thread sender{[], q.push(1) };
-    //thread receiver{[], q.push(2) };
-
-    //sender.join();
-    //receiver.join();
-
-    //FOR QUEUE TESTING
-    /*
-    cout << q.empty() << "\n";
-    q.push(10);
-    q.push(20);
-    cout << q.empty() << "\n";
-    cout << "Pop: " << *q.pop_and_wait() << "\n";
-    cout << "Pop: " << *q.pop_and_wait() << "\n";
-    cout << q.empty() << "\n";
-    */
+    //future and promise for printing sended data
+    promise<vector<bitset<8>>> EncodedData;
+    future<vector<bitset<8>>> EncodedFuture = EncodedData.get_future();
 
     App app {"MLT-3 Encoding"};
 
     app.add_option("input_chars", input_chars, "Given input_chars to send over with MLT-3");
 
     //NOTE ADD WHICH ASCII CHARACTERS ARE ALLOWED! 33 until 129 in dec!
-    
-    try {
-        CLI11_PARSE(app, argc, argv);
-    } catch (exception& e) {
-        cerr << e.what() << "\n";
-    }
+    CLI11_PARSE(app, argc, argv);
 
     // this block is for deleting double characters from input string
     //START
@@ -87,13 +83,16 @@ int main(int argc, char* argv[]) {
     input_chars = string(input_chars.begin(), res);
     //END
 
-    auto random_digits = random(input_chars);
+    auto random_digits = random(input_chars);    
 
-    for (size_t i=0; i < random_digits.size(); ++i) {
-        bitset<8> tmp_outp(random_digits[i]);
-        cout << tmp_outp << "\n";
+    thread sender{send_data, move(DataToSend), random_digits};
+    auto binary_sended_data = DataFuture.get();
+    thread receiver{decode, move(EncodedData), binary_sended_data};
+    
+    for (size_t i=0; i < binary_sended_data.size(); ++i) {
+        cout << binary_sended_data[i] << "\n";
     }
 
-    
-        
+    sender.join();
+    receiver.join();
 }
