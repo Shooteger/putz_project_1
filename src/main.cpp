@@ -11,8 +11,7 @@
 using namespace std;
 using namespace CLI;
 
-//int main(int argc, char* argv[]) {
-int main() {
+int main(int argc, char* argv[]) {
 
     Queue<int> q{};
 
@@ -21,7 +20,13 @@ int main() {
 
     //sender.join();
     //receiver.join();
+
+    App app {"MLT-3 Encoding"};
+
+    CLI11_PARSE(app, argc, argv);
     
+    //FOR QUEUE TESTING
+    /*
     cout << q.empty() << "\n";
     q.push(10);
     q.push(20);
@@ -29,6 +34,7 @@ int main() {
     cout << "Pop: " << *q.pop_and_wait() << "\n";
     cout << "Pop: " << *q.pop_and_wait() << "\n";
     cout << q.empty() << "\n";
+    */
 
-    App app {"MLT-3 Encoding"};
+
 }
