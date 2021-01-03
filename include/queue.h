@@ -51,6 +51,7 @@ class Queue {
             std::lock_guard lock(mtx);
             return data_queue.empty();
         }
+
     private:
         mutable std::mutex mtx;
         std::queue<T> data_queue;
