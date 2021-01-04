@@ -8,3 +8,6 @@ https://stackoverflow.com/questions/10632251/undefined-reference-to-template-fun
 https://en.cppreference.com/w/
 https://online.visual-paradigm.com
 http://cpppatterns.com/patterns/pass-values-between-thread.html
+
+Libaries:
+https://github.com/diegum/bitset-iterator (Open Source / Free usable)

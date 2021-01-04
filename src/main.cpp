@@ -46,23 +46,67 @@ vector<short> random(string allowed="") {
     return res;
 }
 
+//converts given binary block of 8 bit to mlt3 conform block
+//and returns it as a string
+string convert_to_mlt3(bitset<8> binary_block) {
+    string res = "";
+    string status = "000";
+
+    cout << "binary: " << binary_block.to_string() << "; ";
+    //size is always 8 of given bit, return iteration because bitset
+    //at index 0 ist first bit (first of right) of the byte
+    short idx_cnt = 7;
+
+    while (idx_cnt >= 0) {
+        //cout << ;
+        if (binary_block.test(idx_cnt)) {
+            if (status == "000") {
+                status = "00+";
+            } else if (status == "00+") {
+                status = "0+0";
+            } else if (status == "0+0") {
+                status = "+0-";
+            } else if (status == "+0-") {
+                status = "0-0";
+            } else if (status == "0-0") {
+                status = "-0+";
+            } else if (status == "-0+") {
+                status = "0+0";
+            }
+        } 
+        res += status.at(2);
+        //cout << status: " << status.at(2) << ";; ";
+        //cout << "idx: " << binary_block[i] << "; ";
+        idx_cnt--;
+    }
+    cout << "MLT3: " << res << "; ";
+    return res;
+}
+
 //sets the DataPromise and Future from sender thread, that the receiver thread
 //can pick up the sended data in binary format
-void send_data(promise<vector<bitset<8>>>&& DataPromise, vector<short> data_to_send) {
+void send_data(promise<string>&& DataPromise, vector<short> data_to_send) {
     vector<bitset<8>> help_vec_tmp;
     for (size_t i=0; i < data_to_send.size(); ++i) {
         help_vec_tmp.push_back((bitset<8> (data_to_send[i])));
     }
-    DataPromise.set_value(help_vec_tmp);
+
+    string res = "";
+    for (size_t i=0; i < help_vec_tmp.size(); ++i) {
+        res += convert_to_mlt3(help_vec_tmp[i]);
+    }
+
+    DataPromise.set_value(res);
 }
 
 //sets the DataEncoded Promise and Future, so that the encoded data of the receiver thread can be printed
-void decode(promise<vector<bitset<8>>>&& DataEncoded, vector<bitset<8>> sended_data) {
+void decode(promise<string>&& DataEncoded, string sended_data) {
     vector<bitset<8>> res_encoded;
     for (size_t i=0; i < sended_data.size(); ++i) {
         res_encoded.push_back((bitset<8> (sended_data[i])));
     }
-    DataEncoded.set_value(res_encoded);
+    string res = "";
+    DataEncoded.set_value(res);
 }
 
 int main(int argc, char* argv[]) {
@@ -70,12 +114,12 @@ int main(int argc, char* argv[]) {
     Queue<short> q{};
     string input_chars;
     //future and promise for sending data
-    promise<vector<bitset<8>>> DataToSend;
-    future<vector<bitset<8>>> DataFuture = DataToSend.get_future();
+    promise<string> DataToSend;
+    future<string> DataFuture = DataToSend.get_future();
 
     //future and promise for printing sended data
-    promise<vector<bitset<8>>> EncodedData;
-    future<vector<bitset<8>>> EncodedFuture = EncodedData.get_future();
+    promise<string>  EncodedData;
+    future<string> EncodedFuture = EncodedData.get_future();
 
     App app {"MLT-3 Encoding"};
 
@@ -95,14 +139,18 @@ int main(int argc, char* argv[]) {
     auto random_digits = random(input_chars);    
 
     thread sender{send_data, move(DataToSend), random_digits};
-    auto binary_sended_data = DataFuture.get();
+    auto binary_sended_data = DataFuture.get(); //sets future for receiver thread with mlt3 encoded data
+
+    //cout << binary_sended_data;
 
     thread receiver{decode, move(EncodedData), binary_sended_data};
     
+    /*
     auto encoded_ascii_data = EncodedFuture.get();
     for (size_t i=0; i < encoded_ascii_data.size(); ++i) {
         cout << encoded_ascii_data[i] << "\n";
     }
+    */
 
     sender.join();
     receiver.join();
