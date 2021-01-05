@@ -44,6 +44,9 @@ vector<short> random(string allowed="") {
             res.push_back(bitset<8>(tmp_bitsets[random_idx]).to_ullong());    //access random elemnt of the new vector with allowed ascii signs from input
         }
     }
+    for (size_t i=0; i < res.size(); ++i) {
+        cout << "Data to Decode and send: " << res[i] << "\n";
+    }
     return res;
 }
 
@@ -52,8 +55,6 @@ vector<short> random(string allowed="") {
 string convert_to_mlt3(bitset<8> binary_block) {
     string res = "";
     string status = "000";
-
-    //cout << "binary: " << binary_block.to_string() << "; ";
     
     //size is always 8 of given bit, return iteration because bitset
     //at index 0 ist first bit (first of right) of the byte
@@ -77,11 +78,8 @@ string convert_to_mlt3(bitset<8> binary_block) {
             }
         } 
         res += status.at(2);
-        //cout << status: " << status.at(2) << ";; ";
-        //cout << "idx: " << binary_block[i] << "; ";
         idx_cnt--;
     }
-    //cout << "MLT3: " << res << "; ";
     return res;
 }
 
@@ -95,7 +93,6 @@ string decrypt_from_mlt3(string mlt3_data) {
             encoded_res += "0";
         }
     }
-
     stringstream sstream(encoded_res);
     string output;
     while(sstream.good())
@@ -105,7 +102,6 @@ string decrypt_from_mlt3(string mlt3_data) {
         char c = char(bits.to_ulong());
         output += c;
     }
-    
     return output;
 }
 
@@ -116,7 +112,6 @@ void send_data(vector<short> data_to_send, Queue<string>& queue) {
     for (size_t i=0; i < data_to_send.size(); ++i) {
         help_vec_tmp.push_back((bitset<8> (data_to_send[i])));
     }
-
     //every bitblog will be converted with mlt3 and send to promise for receiver thread
     string res = "";
     for (size_t i=0; i < help_vec_tmp.size(); ++i) {
@@ -126,14 +121,8 @@ void send_data(vector<short> data_to_send, Queue<string>& queue) {
 
 //sets the DataEncoded Promise and Future, so that the encoded data of the receiver thread can be printed
 void decode(Queue<string>& queue) {
-    //string bit_string;
     cout << "test";
     while (!queue.empty()) {
-        //bit_string = decrypt_from_mlt3(*queue.pop_and_wait());
-        //for (size_t i = 0; i < bit_string.size(); ++i) {
-            //bit_string.
-        //}
-        //bitset<8> binary_encoded_res
         cout << "Encoded: " << decrypt_from_mlt3(*queue.pop_and_wait()) << ";\n";
     }
 }
@@ -162,7 +151,6 @@ int main(int argc, char* argv[]) {
 
     thread sender{send_data, random(input_chars), ref(q)};  //ref for rvalue error in std::thread
     thread receiver{decode, ref(q)};
-
 
     sender.join();
     receiver.join();
