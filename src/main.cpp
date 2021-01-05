@@ -5,7 +5,8 @@
 #include <iostream>
 #include <thread>
 #include <bitset>
-#include <bits/stdc++.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <future>
 
 #include "queue.h"
@@ -84,6 +85,30 @@ string convert_to_mlt3(bitset<8> binary_block) {
     return res;
 }
 
+string decrypt_from_mlt3(string mlt3_data) {
+    string encoded_res = "0";
+    
+    for (size_t i = 1; i < mlt3_data.size(); ++i) {
+        if (mlt3_data.at(i) !=  mlt3_data.at(i-1)) {
+            encoded_res += "1";
+        } else {
+            encoded_res += "0";
+        }
+    }
+
+    stringstream sstream(encoded_res);
+    string output;
+    while(sstream.good())
+    {
+        bitset<8> bits;
+        sstream >> bits;
+        char c = char(bits.to_ulong());
+        output += c;
+    }
+    
+    return output;
+}
+
 //sets the DataPromise and Future from sender thread, that the receiver thread
 //can pick up the sended data in binary format
 void send_data(vector<short> data_to_send, Queue<string>& queue) {
@@ -101,7 +126,16 @@ void send_data(vector<short> data_to_send, Queue<string>& queue) {
 
 //sets the DataEncoded Promise and Future, so that the encoded data of the receiver thread can be printed
 void decode(Queue<string>& queue) {
-    cout << *queue.pop_and_wait();
+    //string bit_string;
+    cout << "test";
+    while (!queue.empty()) {
+        //bit_string = decrypt_from_mlt3(*queue.pop_and_wait());
+        //for (size_t i = 0; i < bit_string.size(); ++i) {
+            //bit_string.
+        //}
+        //bitset<8> binary_encoded_res
+        cout << "Encoded: " << decrypt_from_mlt3(*queue.pop_and_wait()) << ";\n";
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -127,7 +161,8 @@ int main(int argc, char* argv[]) {
     //vector<short> random_digits = random(input_chars);    
 
     thread sender{send_data, random(input_chars), ref(q)};  //ref for rvalue error in std::thread
-    thread receiver{decode, ref(q)};    
+    thread receiver{decode, ref(q)};
+
 
     sender.join();
     receiver.join();
