@@ -10,4 +10,3 @@ https://online.visual-paradigm.com
 http://cpppatterns.com/patterns/pass-values-between-thread.html
 
 Libaries:
-https://github.com/diegum/bitset-iterator (Open Source / Free usable)

@@ -11,6 +11,7 @@
 
 #include "queue.h"
 #include "CLI11.hpp"
+#include "spdlog/spdlog.h"
 
 using namespace std;
 using namespace CLI;
@@ -127,16 +128,32 @@ void decode(Queue<string>& queue) {
 }
 
 int main(int argc, char* argv[]) {
-
-    Queue<string> q{};
+    
     string input_chars;
 
     App app {"MLT-3 Encoding"};
-
-    app.add_option("input_chars", input_chars, "Given input_chars to send over with MLT-3");
+    app.add_option("input_characters", input_chars, "Only given characters will be random times send over with MLT-3.    Example: \"./mlt3send asdf\"");
+    auto f = app.add_flag("-f,--file", "Writes every step of the process into a file");
+    auto t = app.add_flag("-t,--table", "Output whole process as table formatted on the command line");
 
     //NOTE ADD WHICH ASCII CHARACTERS ARE ALLOWED! 33 until 129 in dec!
-    CLI11_PARSE(app, argc, argv);
+
+    try {
+        CLI11_PARSE(app, argc, argv);
+    } catch(const ParseError &e) {
+        spdlog::error("Program terminated because of parse exception: {0}", e.what());
+        return app.exit(e);
+    }
+
+    if (f) {
+
+    }
+
+    if (t) {
+
+    }
+
+    Queue<string> q{};
 
     // this block is for deleting double characters from input string
     //START
@@ -145,7 +162,7 @@ int main(int argc, char* argv[]) {
     input_chars = string(input_chars.begin(), res);
     //END
 
-    thread sender{send_data, random(input_chars), ref(q)};  //ref for rvalue error in std::thread
+    thread sender{send_data, random(input_chars), ref(q)};  //ref() for rvalue error in std::thread because its given by reference
     sender.join();
 
     thread receiver{decode, ref(q)};
