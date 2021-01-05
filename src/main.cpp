@@ -121,7 +121,6 @@ void send_data(vector<short> data_to_send, Queue<string>& queue) {
 
 //sets the DataEncoded Promise and Future, so that the encoded data of the receiver thread can be printed
 void decode(Queue<string>& queue) {
-    cout << "test";
     while (!queue.empty()) {
         cout << "Encoded: " << decrypt_from_mlt3(*queue.pop_and_wait()) << ";\n";
     }
@@ -146,12 +145,9 @@ int main(int argc, char* argv[]) {
     input_chars = string(input_chars.begin(), res);
     //END
 
-    //vector with random ascii values between 32 and 126
-    //vector<short> random_digits = random(input_chars);    
-
     thread sender{send_data, random(input_chars), ref(q)};  //ref for rvalue error in std::thread
-    thread receiver{decode, ref(q)};
-
     sender.join();
+
+    thread receiver{decode, ref(q)};
     receiver.join();
 }
