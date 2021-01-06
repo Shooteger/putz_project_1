@@ -3,7 +3,7 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**", "/home/maurice/Documents/", "/home/maurice/Documents/spdlog/include/"
+                "${workspaceFolder}/**", "/home/maurice/Documents/", "/home/maurice/Documents/spdlog/include/", "/home/maurice/Documents/tabulate/single_include/"
 
             ],
             "defines": [],

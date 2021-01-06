@@ -9,12 +9,19 @@
 #include <stdlib.h>
 #include <future>
 
+
 #include "queue.h"
 #include "CLI11.hpp"
-#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/async.h"
+#include "tabulate/tabulate.hpp"
 
 using namespace std;
 using namespace CLI;
+using namespace tabulate;
+
+//const auto logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");  //basic logger
+auto logger = spdlog::basic_logger_mt<spdlog::async_factory>("async_file_logger", "logs/async_log.txt"); //async logger -> faster
 
 //for encoding the character if the input string to ascii DEC numbers
 short encode(char character_to_encode) {
@@ -118,6 +125,7 @@ void send_data(vector<short> data_to_send, Queue<string>& queue) {
     for (size_t i=0; i < help_vec_tmp.size(); ++i) {
         queue.push(convert_to_mlt3(help_vec_tmp[i]));
     }
+    logger->info("All data succesfulls on queue pushed");
 }
 
 //sets the DataEncoded Promise and Future, so that the encoded data of the receiver thread can be printed
@@ -135,22 +143,15 @@ int main(int argc, char* argv[]) {
     app.add_option("input_characters", input_chars, "Only given characters will be random times send over with MLT-3.    Example: \"./mlt3send asdf\"");
     auto f = app.add_flag("-f,--file", "Writes every step of the process into a file");
     auto t = app.add_flag("-t,--table", "Output whole process as table formatted on the command line");
+    auto s = app.add_flag("-s,--start", "Stop time between input and start of sending until receiving data");
 
     //NOTE ADD WHICH ASCII CHARACTERS ARE ALLOWED! 33 until 129 in dec!
 
     try {
         CLI11_PARSE(app, argc, argv);
     } catch(const ParseError &e) {
-        spdlog::error("Program terminated because of parse exception: {0}", e.what());
+        logger->error("Program terminated because of parse exception: {0}", e.what());
         return app.exit(e);
-    }
-
-    if (f) {
-
-    }
-
-    if (t) {
-
     }
 
     Queue<string> q{};
@@ -161,6 +162,22 @@ int main(int argc, char* argv[]) {
     auto res = unique(input_chars.begin(), input_chars.end());
     input_chars = string(input_chars.begin(), res);
     //END
+
+    if (f) {
+
+        logger->info("write in file succesfull");
+    }
+    if (t) {
+        Table universal_constants;
+        universal_constants.add_row({"Data to send", "Binary format", "MTL-3 format", "Binary format", "Data recceived"});
+
+        cout << universal_constants << "\n";
+        logger->debug("table printed");
+    }
+
+    if (s) {
+        logger->info("");
+    }
 
     thread sender{send_data, random(input_chars), ref(q)};  //ref() for rvalue error in std::thread because its given by reference
     sender.join();

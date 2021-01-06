@@ -15,7 +15,7 @@ option('pprint_include_dir', type : 'string', value : '', description : 'the dir
 option('rang_include_dir', type : 'string', value : '', description : 'the dir containing rang.hpp')
 option('spdlog_include_dir', type : 'string', value : '/home/maurice/Documents/spdlog/include/', description : 'the include dir of spdlog')
 option('sml_include_dir', type : 'string', value : '', description : 'the dir containing sml.hpp')
-option('tabulate_include_dir', type : 'string', value : '', description : 'the dir containing tabulate.hpp')
+option('tabulate_include_dir', type : 'string', value : '/home/maurice/Documents/tabulate/single_include/', description : 'the dir containing tabulate.hpp')
 option('taskflow_include_dir', type : 'string', value : '', description : 'the dir containing the dir taskflow')
 option('toml_include_dir', type : 'string', value : '', description : 'the include dir of toml++')
 option('tfile_include_dir', type : 'string', value : '', description : 'the dir containing tfile.h')

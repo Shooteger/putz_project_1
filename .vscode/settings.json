@@ -4,6 +4,7 @@
         "condition_variable": "cpp",
         "iostream": "cpp",
         "future": "cpp",
-        "bitset": "cpp"
+        "bitset": "cpp",
+        "thread": "cpp"
     }
 }
