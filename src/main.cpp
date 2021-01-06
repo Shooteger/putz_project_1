@@ -52,8 +52,40 @@ vector<short> random(string allowed="") {
             res.push_back(bitset<8>(tmp_bitsets[random_idx]).to_ullong());    //access random elemnt of the new vector with allowed ascii signs from input
         }
     }
+    return res;
+}
+
+//operation overload for table or file output
+vector<short> random(Table& tab, string allowed="", bool f=false) {
+    vector<short> res;
+    srand((int)time(0));
+	int repeat = (rand() % (126-33)) + 1;   //how often random ascii sign should be repeated
+
+    if (allowed == "") {
+        int i = 0;
+        while(i++ < repeat) {
+            res.push_back((rand() % (126-33)) + 33); //33 is ! and 126 is ~ all between are numbers, special signs or letters
+        }
+    } else {
+        vector<short> tmp_bitsets;
+        for (size_t i=0; i < allowed.length(); ++i) {
+            tmp_bitsets.push_back(encode(allowed.at(i)));   //get bitset for given ascii signs in allowed
+        }
+
+        int j = 0;
+        while(j++ < repeat) {
+            int random_idx = rand() % tmp_bitsets.size();
+            res.push_back(bitset<8>(tmp_bitsets[random_idx]).to_ullong());    //access random elemnt of the new vector with allowed ascii signs from input
+        }
+    }
+    string tmp;
+    //table add all rows and col1 data
     for (size_t i=0; i < res.size(); ++i) {
-        cout << "Data to Decode and send: " << res[i] << "\n";
+        if (f) {
+
+        }
+        tmp = to_string(res[i]);
+        tab.add_row({tmp, "", "", "", ""});
     }
     return res;
 }
@@ -169,7 +201,13 @@ int main(int argc, char* argv[]) {
     }
     if (t) {
         Table universal_constants;
-        universal_constants.add_row({"Data to send", "Binary format", "MTL-3 format", "Binary format", "Data recceived"});
+        universal_constants.add_row({"ASCII data to send in DEC Format", "Binary format", "MTL-3 format", "Binary format encoded from MLT-3 format", "Data recceived in ASCII characters"});
+
+        thread sender{send_data, random(ref(universal_constants), input_chars), ref(q)};  //ref() for rvalue error in std::thread because its given by reference
+        sender.join();
+
+        thread receiver{decode, ref(q)};
+        receiver.join();
 
         cout << universal_constants << "\n";
         logger->debug("table printed");
@@ -179,9 +217,5 @@ int main(int argc, char* argv[]) {
         logger->info("");
     }
 
-    thread sender{send_data, random(input_chars), ref(q)};  //ref() for rvalue error in std::thread because its given by reference
-    sender.join();
-
-    thread receiver{decode, ref(q)};
-    receiver.join();
+    
 }
