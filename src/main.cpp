@@ -15,6 +15,7 @@
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/async.h"
 #include "tabulate/tabulate.hpp"
+#include "rang.hpp"
 
 using namespace std;
 using namespace CLI;
@@ -56,7 +57,7 @@ vector<short> random(string allowed="") {
 }
 
 //operation overload for table or file output
-vector<short> random(Table& tab, string allowed="", bool f=false) {
+vector<short> random_tf(Table& tab, string allowed="") {
     vector<short> res;
     srand((int)time(0));
 	int repeat = (rand() % (126-33)) + 1;   //how often random ascii sign should be repeated
@@ -81,9 +82,6 @@ vector<short> random(Table& tab, string allowed="", bool f=false) {
     string tmp;
     //table add all rows and col1 data
     for (size_t i=0; i < res.size(); ++i) {
-        if (f) {
-
-        }
         tmp = to_string(res[i]);
         tab.add_row({tmp, "", "", "", ""});
     }
@@ -123,7 +121,7 @@ string convert_to_mlt3(bitset<8> binary_block) {
     return res;
 }
 
-string decrypt_from_mlt3(string mlt3_data) {
+string decrypt_from_mlt3(string mlt3_data, Table& tab, int table_col_cnt) {
     string encoded_res = "0";
     
     for (size_t i = 1; i < mlt3_data.size(); ++i) {
@@ -133,6 +131,10 @@ string decrypt_from_mlt3(string mlt3_data) {
             encoded_res += "0";
         }
     }
+
+    //cout << table_col_cnt << "\n";
+    tab[table_col_cnt][3].set_text(encoded_res); //SETS binary format table column4
+    
     stringstream sstream(encoded_res);
     string output;
     while(sstream.good())
@@ -142,6 +144,8 @@ string decrypt_from_mlt3(string mlt3_data) {
         char c = char(bits.to_ulong());
         output += c;
     }
+
+    tab[table_col_cnt][4].set_text(output);  //dispaly ascii signs in last column 5
     return output;
 }
 
@@ -160,10 +164,29 @@ void send_data(vector<short> data_to_send, Queue<string>& queue) {
     logger->info("All data succesfulls on queue pushed");
 }
 
+void send_data_tf(vector<short> data_to_send, Queue<string>& queue, Table& tab) {
+    vector<bitset<8>> help_vec_tmp;
+    for (size_t i=0; i < data_to_send.size(); ++i) {
+        help_vec_tmp.push_back((bitset<8> (data_to_send[i])));
+        tab[i+1][1].set_text(help_vec_tmp[i].to_string());   //for second column output in table
+    }
+    //every bitblog will be converted with mlt3 and send to promise for receiver thread
+    string res = "";
+    for (size_t i=0; i < help_vec_tmp.size(); ++i) {
+        string tmp = convert_to_mlt3(help_vec_tmp[i]);
+        queue.push(tmp);
+        tab[i+1][2].set_text(tmp);  //for third column in table
+    }
+    logger->info("All data succesfulls on queue pushed");
+}
+
 //sets the DataEncoded Promise and Future, so that the encoded data of the receiver thread can be printed
-void decode(Queue<string>& queue) {
+void decode(Queue<string>& queue, Table& tab) {
+    int cnt = 1;
+    string tmp;
     while (!queue.empty()) {
-        cout << "Encoded: " << decrypt_from_mlt3(*queue.pop_and_wait()) << ";\n";
+        tmp = decrypt_from_mlt3(*queue.pop_and_wait(), ref(tab), cnt);
+        cnt++;
     }
 }
 
@@ -171,14 +194,17 @@ int main(int argc, char* argv[]) {
     
     string input_chars;
 
+    bool f = false;
+    bool t = false;
+    bool s = false;
+    
     App app {"MLT-3 Encoding"};
     app.add_option("input_characters", input_chars, "Only given characters will be random times send over with MLT-3.    Example: \"./mlt3send asdf\"");
-    auto f = app.add_flag("-f,--file", "Writes every step of the process into a file");
-    auto t = app.add_flag("-t,--table", "Output whole process as table formatted on the command line");
-    auto s = app.add_flag("-s,--start", "Stop time between input and start of sending until receiving data");
+    app.add_flag("-f,--file", f, "Writes the table of the processes into an ASCII-Doc");
+    app.add_flag("-t,--table", t, "Output whole process as table formatted on the command line");
+    app.add_flag("-s,--start", s, "Stop time between input and start of sending until receiving data");
 
     //NOTE ADD WHICH ASCII CHARACTERS ARE ALLOWED! 33 until 129 in dec!
-
     try {
         CLI11_PARSE(app, argc, argv);
     } catch(const ParseError &e) {
@@ -196,17 +222,27 @@ int main(int argc, char* argv[]) {
     //END
 
     if (f) {
+        AsciiDocExporter exporter;
+        //auto asciidoc = exporter.dump(table);
 
+        //cout << rang::fg::red << "You can render your ASCII Document with an ASCII Rendertool or online at: https://www.tutorialspoint.com/online_asciidoc_editor.php\n" << rang::style::reset;
         logger->info("write in file succesfull");
     }
     if (t) {
         Table universal_constants;
+
+        /*
+        universal_constants.format()
+        .font_style({FontStyle::bold})
+        .corner_color(Color::magenta)
+        .border_color(Color::magenta);
+        */
         universal_constants.add_row({"ASCII data to send in DEC Format", "Binary format", "MTL-3 format", "Binary format encoded from MLT-3 format", "Data recceived in ASCII characters"});
 
-        thread sender{send_data, random(ref(universal_constants), input_chars), ref(q)};  //ref() for rvalue error in std::thread because its given by reference
+        thread sender{send_data_tf, random_tf(ref(universal_constants), input_chars), ref(q), ref(universal_constants)};  //ref() for rvalue error in std::thread because its given by reference
         sender.join();
 
-        thread receiver{decode, ref(q)};
+        thread receiver{decode, ref(q), ref(universal_constants)};
         receiver.join();
 
         cout << universal_constants << "\n";

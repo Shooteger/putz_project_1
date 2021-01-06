@@ -9,7 +9,8 @@ thread_dep = dependency('threads')
 inc_dir = include_directories(['include', 
                                get_option('cli11_include_dir'),
                                get_option('spdlog_include_dir'),
-                               get_option('tabulate_include_dir')
+                               get_option('tabulate_include_dir'),
+                               get_option('rang_include_dir')
                               ])
 src = ['src/main.cpp']
 
