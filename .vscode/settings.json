@@ -9,6 +9,7 @@
         "any": "cpp",
         "optional": "cpp",
         "variant": "cpp",
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "iosfwd": "cpp"
     }
 }

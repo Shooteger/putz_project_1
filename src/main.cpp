@@ -30,14 +30,14 @@ string logPath = home;
 auto logger = spdlog::basic_logger_mt<spdlog::async_factory>("async_file_logger", logPath.append("/Desktop/mlt3logs/log.txt")); //async logger -> faster
 
 //for encoding the character if the input string to ascii DEC numbers
-short encode(char character_to_encode) {
+int encode(char character_to_encode) {
     return bitset<8>(character_to_encode).to_ulong();
 }
 
 //returns a random amount from 1 until 127 numbers of random numbers between 33 and 126
 //this are the ASCII character in DEC and all special and alphanumerical character of ASCII
-vector<short> random_tf(Table& tab, string allowed="") {
-    vector<short> res;
+vector<int> random_tf(Table& tab, string allowed="") {
+    vector<int> res;
     srand((int)time(0));
 	int repeat = (rand() % (126-33)) + 1;   //how often random ascii sign should be repeated
 
@@ -47,7 +47,7 @@ vector<short> random_tf(Table& tab, string allowed="") {
             res.push_back((rand() % (126-33)) + 33); //33 is ! and 126 is ~ all between are numbers, special signs or letters
         }
     } else {
-        vector<short> tmp_bitsets;
+        vector<int> tmp_bitsets;
         for (size_t i=0; i < allowed.length(); ++i) {
             tmp_bitsets.push_back(encode(allowed.at(i)));   //get bitset for given ascii signs in allowed
         }
@@ -61,7 +61,8 @@ vector<short> random_tf(Table& tab, string allowed="") {
     string tmp;
     //table add all rows and col1 data
     for (size_t i=0; i < res.size(); ++i) {
-        tmp = to_string(res[i]);
+        //tmp = char(res[i]);
+        tmp = char(res[i]);
         tab.add_row({tmp, "", "", "", ""});
     }
     return res;
@@ -75,7 +76,7 @@ string convert_to_mlt3(bitset<8> binary_block) {
     
     //size is always 8 of given bit, return iteration because bitset
     //at index 0 ist first bit (first of right) of the byte
-    short idx_cnt = 7;
+    int idx_cnt = 7;
 
     while (idx_cnt >= 0) {
         //cout << ;
@@ -130,7 +131,7 @@ string decrypt_from_mlt3(string mlt3_data, Table& tab, int table_col_cnt) {
 
 //sets the DataPromise and Future from sender thread, that the receiver thread
 //can pick up the sended data in binary format
-void send_data_tf(vector<short> data_to_send, Queue<string>& queue, Table& tab) {
+void send_data_tf(vector<int> data_to_send, Queue<string>& queue, Table& tab) {
     vector<bitset<8>> help_vec_tmp;
     for (size_t i=0; i < data_to_send.size(); ++i) {
         help_vec_tmp.push_back((bitset<8> (data_to_send[i])));
@@ -162,9 +163,16 @@ int main(int argc, char* argv[]) {
     bool f = false;
     bool t = false;
     bool c = false;
+
+    set<string> check_set = {"!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", "0",
+                             "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?", "@",
+                             "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
+                             "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "[", "\\", "]", "^", "_", "´",
+                             "{", "}", "|", "~"};
     
     CLI::App app {"MLT-3 Encoding"};
-    app.add_option("input_characters", input_chars, "Only given characters will be random times send over with MLT-3.    Example: \"./mlt3send asdf\"");
+    app.add_option("input_characters", input_chars,
+         "Only given characters will be random times send over with MLT-3.    Example: \"./mlt3send asdf\"")->check(CLI::IsMember(check_set))->ignore_case();
     app.add_flag("-f,--file", f, "Writes the ouput of MLT-3 process an ASCII-Doc and outputs it on console as well");
     app.add_flag("-t,--time", t, "Time measurement of sending until receiving data");
     app.add_flag("-c,--color", c, "Standard table output with color");
@@ -190,8 +198,8 @@ int main(int argc, char* argv[]) {
 
     Table main_table;   //create table for output
 
-    main_table.add_row({"ASCII data to send in DEC", "Binary", "MTL-3", 
-                        "Binary encoded from MLT-3", "Data recceived in ASCII characters"});
+    main_table.add_row({"ASCII data to send", "Binary", "MTL-3", 
+                        "Binary encoded from MLT-3", "Data received in ASCII"});
 
     if (c) {          
         main_table.format().corner_color(Color::magenta).border_color(Color::magenta)
@@ -213,25 +221,33 @@ int main(int argc, char* argv[]) {
         logger->info("table printed");
     }
     if (f) {    // if f, then asciidoc output on console and write into file
-        AsciiDocExporter exporter;
-        string asciidoc = exporter.dump(main_table);
+        MarkdownExporter exporter;
+        //AsciiDocExporter exporter;
+        //string asciidoc = exporter.dump(main_table);
+        string mkdoc = exporter.dump(main_table);
 
-        string tmp_path = home.append("/Desktop/mlt3.adoc");
+        string tmp_path = home.append("/Desktop/mlt3.mkd");
         ofstream file;
-        file.open(tmp_path, ios::out | ios_base::binary);
+        file.open(tmp_path, ios::out | ios::trunc | ios_base::binary);
         if (!file) {
             string err_msg = "Could not open file: ";
             logger->error(err_msg.append(tmp_path));
             cout << "Could not create file at path: " << tmp_path << "\n";
         } else {
-            file << asciidoc;
+            cout << "\n" << mkdoc;
+            //asciidoc.erase(remove(asciidoc.begin(), asciidoc.end(), '\00'), asciidoc.end());
+            file << mkdoc;
             file.close();
-            cout << "\n" << asciidoc;
+            cout << rang::fg::magenta << "\n\n[NOTE]\nThe result is saved to the location: "
+                 << rang::style::underline << rang::fg::cyan << tmp_path
+                 << rang::style::reset << rang::fg::magenta << "\nIt is formated as markdown.\n" << rang::style::reset;
+            /*
             cout << rang::fg::magenta << "\n\n[NOTE]\nYou can render your ASCII Document with an ASCII Rendertool or online at: \n"
                  << rang::style::underline << rang::fg::cyan <<"https://www.tutorialspoint.com/online_asciidoc_editor.php\n"
                  << rang::style::reset << rang::fg::magenta << "\nYou can copy and paste the output on the console or the content of the file into the page"
                  << "on the left side of the window and then press \"preview\", to see the rendered table.\n\n" 
                  << rang::style::reset;
+            */
             logger->info("write in file succesfull");
         }
     }
