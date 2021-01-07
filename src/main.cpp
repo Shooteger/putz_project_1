@@ -7,8 +7,7 @@
 #include <bitset>
 #include <stdio.h>
 #include <stdlib.h>
-#include <future>
-
+#include <fstream>
 
 #include "queue.h"
 #include "CLI11.hpp"
@@ -23,7 +22,6 @@
 #pragma GCC diagnostic pop
 
 using namespace std;
-using namespace CLI;
 using namespace tabulate;
 
 string home = getenv("HOME");
@@ -164,15 +162,15 @@ int main(int argc, char* argv[]) {
     bool f = false;
     bool s = false;
     
-    App app {"MLT-3 Encoding"};
+    CLI::App app {"MLT-3 Encoding"};
     app.add_option("input_characters", input_chars, "Only given characters will be random times send over with MLT-3.    Example: \"./mlt3send asdf\"");
-    app.add_flag("-f,--file", f, "Writes the ouput of MLT-3 process and time measurement into an ASCII-Doc");
+    app.add_flag("-f,--file", f, "Writes the ouput of MLT-3 process an ASCII-Doc and outputs it on console as well");
     app.add_flag("-t,--time", s, "Time measurement of sending until receiving data");
 
     //NOTE ADD WHICH ASCII CHARACTERS ARE ALLOWED! 33 until 129 in dec!
     try {
         CLI11_PARSE(app, argc, argv);
-    } catch(const ParseError &e) {
+    } catch(const CLI::ParseError &e) {
         logger->error("Program terminated because of parse exception: {0}", e.what());
         return app.exit(e);
     }
@@ -204,23 +202,30 @@ int main(int argc, char* argv[]) {
 
     if (!f) {
         cout << main_table << "\n";
-        logger->debug("table printed");
+        logger->info("table printed");
     }
     if (f) {
         AsciiDocExporter exporter;
-        auto asciidoc = exporter.dump(main_table);
-        //auto asciidoc = exporter.dump(table);
+        string asciidoc = exporter.dump(main_table);
 
+        string tmp_path = home.append("/Desktop/mlt3.txt");
         ofstream file;
-        file.open (home.append("/Desktop/mlt3.adoc"));
+        file.open(tmp_path, ios::out | ios_base::app | ios_base::binary);
         if (!file) {
             string err_msg = "Could not open file: ";
-            logger->error(err_msg.append(home));
-            cout << "Could not create file at path: " << home << "\n";
+            logger->error(err_msg.append(tmp_path));
+            cout << "Could not create file at path: " << tmp_path << "\n";
         } else {
-            file << asciidoc;
+            cout << "\n" << asciidoc;
+            file << asciidoc << "\n";
             file.close();
-            //cout << rang::fg::red << "You can render your ASCII Document with an ASCII Rendertool or online at: https://www.tutorialspoint.com/online_asciidoc_editor.php\n" << rang::style::reset;
+
+            cout << rang::fg::magenta << "\n\n[NOTE]\nYou can render your ASCII Document with an ASCII Rendertool or online at: \n"
+                 << rang::style::underline << rang::fg::cyan <<"https://www.tutorialspoint.com/online_asciidoc_editor.php\n"
+                 << rang::style::reset << rang::fg::magenta << "\n You can copy and paste the output on the console or in the file into the page on the"
+                 << "window on the left side and then press \"preview\", to see the rendered table.\n\n" 
+                 << rang::style::reset;
+            
             logger->info("write in file succesfull");
         }
     }
@@ -229,5 +234,4 @@ int main(int argc, char* argv[]) {
         logger->info("");
     }
 
-    
 }

@@ -5,6 +5,9 @@
         "iostream": "cpp",
         "future": "cpp",
         "bitset": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "any": "cpp",
+        "optional": "cpp",
+        "variant": "cpp"
     }
 }
