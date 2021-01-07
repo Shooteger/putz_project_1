@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fstream>
+#include <chrono>
 
 #include "queue.h"
 #include "CLI11.hpp"
@@ -158,24 +159,27 @@ void decode(Queue<string>& queue, Table& tab) {
 int main(int argc, char* argv[]) {
     
     string input_chars;
-
     bool f = false;
-    bool s = false;
+    bool t = false;
+    bool c = false;
     
     CLI::App app {"MLT-3 Encoding"};
     app.add_option("input_characters", input_chars, "Only given characters will be random times send over with MLT-3.    Example: \"./mlt3send asdf\"");
     app.add_flag("-f,--file", f, "Writes the ouput of MLT-3 process an ASCII-Doc and outputs it on console as well");
-    app.add_flag("-t,--time", s, "Time measurement of sending until receiving data");
+    app.add_flag("-t,--time", t, "Time measurement of sending until receiving data");
+    app.add_flag("-c,--color", c, "Standard table output with color");
 
     //NOTE ADD WHICH ASCII CHARACTERS ARE ALLOWED! 33 until 129 in dec!
+    cout << rang::fg::red;
     try {
         CLI11_PARSE(app, argc, argv);
     } catch(const CLI::ParseError &e) {
         logger->error("Program terminated because of parse exception: {0}", e.what());
         return app.exit(e);
     }
+    cout << rang::style::reset;
 
-    Queue<string> q{};
+    Queue<string> q{}; //create queue
 
     // this block is for deleting double characters from input string
     //START
@@ -184,54 +188,59 @@ int main(int argc, char* argv[]) {
     input_chars = string(input_chars.begin(), res);
     //END
 
-    Table main_table;
+    Table main_table;   //create table for output
 
-        /*
-        main_table.format()
-        .font_style({FontStyle::bold})
-        .corner_color(Color::magenta)
-        .border_color(Color::magenta);
-        */
-    main_table.add_row({"ASCII data to send in DEC Format", "Binary format", "MTL-3 format", "Binary format encoded from MLT-3 format", "Data recceived in ASCII characters"});
+    main_table.add_row({"ASCII data to send in DEC", "Binary", "MTL-3", 
+                        "Binary encoded from MLT-3", "Data recceived in ASCII characters"});
 
+    if (c) {          
+        main_table.format().corner_color(Color::magenta).border_color(Color::magenta)
+        .font_style({FontStyle::bold, FontStyle::underline}).font_color(Color::cyan);
+    }
+
+    auto start = chrono::steady_clock::now();   //starts time measurement
+    //thread to send and push data to queue gets started
     thread sender{send_data_tf, random_tf(ref(main_table), input_chars), ref(q), ref(main_table)};  //ref() for rvalue error in std::thread because its given by reference
     sender.join();
 
+    //thread to decode and pop data from queue gets started
     thread receiver{decode, ref(q), ref(main_table)};
     receiver.join();
+    auto end = chrono::steady_clock::now();   //ends time measurement
 
-    if (!f) {
+    if (!f) {   //if not -f flag
         cout << main_table << "\n";
         logger->info("table printed");
     }
-    if (f) {
+    if (f) {    // if f, then asciidoc output on console and write into file
         AsciiDocExporter exporter;
         string asciidoc = exporter.dump(main_table);
 
-        string tmp_path = home.append("/Desktop/mlt3.txt");
+        string tmp_path = home.append("/Desktop/mlt3.adoc");
         ofstream file;
-        file.open(tmp_path, ios::out | ios_base::app | ios_base::binary);
+        file.open(tmp_path, ios::out | ios_base::binary);
         if (!file) {
             string err_msg = "Could not open file: ";
             logger->error(err_msg.append(tmp_path));
             cout << "Could not create file at path: " << tmp_path << "\n";
         } else {
-            cout << "\n" << asciidoc;
-            file << asciidoc << "\n";
+            file << asciidoc;
             file.close();
-
+            cout << "\n" << asciidoc;
             cout << rang::fg::magenta << "\n\n[NOTE]\nYou can render your ASCII Document with an ASCII Rendertool or online at: \n"
                  << rang::style::underline << rang::fg::cyan <<"https://www.tutorialspoint.com/online_asciidoc_editor.php\n"
-                 << rang::style::reset << rang::fg::magenta << "\n You can copy and paste the output on the console or in the file into the page on the"
-                 << "window on the left side and then press \"preview\", to see the rendered table.\n\n" 
+                 << rang::style::reset << rang::fg::magenta << "\nYou can copy and paste the output on the console or the content of the file into the page"
+                 << "on the left side of the window and then press \"preview\", to see the rendered table.\n\n" 
                  << rang::style::reset;
-            
             logger->info("write in file succesfull");
         }
     }
 
-    if (s) {
-        logger->info("");
+    if (t) {
+        string t_measure = to_string(chrono::duration_cast<chrono::nanoseconds>(end - start).count());
+        cout << "\nElapsed time in nanoseconds  : " << t_measure << " ns\n";
+        cout << "Elapsed time in microseconds : " << chrono::duration_cast<chrono::microseconds>(end - start).count() << " µs\n";
+        string tmp = "time of threads elapsed: ";
+        logger->info(tmp.append(t_measure));
     }
-
 }
