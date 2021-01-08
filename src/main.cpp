@@ -16,7 +16,7 @@
 #include "spdlog/async.h"
 #include "rang.hpp"
 
-//ignore warnings from extern library "tabulate"
+//ignore warning "-Wnon-virtual-dtor" from extern library "tabulate"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #include "tabulate/tabulate.hpp"
@@ -25,6 +25,7 @@
 using namespace std;
 using namespace tabulate;
 
+//create logger for file
 string home = getenv("HOME");
 string logPath = home;
 auto logger = spdlog::basic_logger_mt<spdlog::async_factory>("async_file_logger", logPath.append("/Desktop/mlt3logs/log.txt")); //async logger -> faster
@@ -79,7 +80,6 @@ string convert_to_mlt3(bitset<8> binary_block) {
     int idx_cnt = 7;
 
     while (idx_cnt >= 0) {
-        //cout << ;
         if (binary_block.test(idx_cnt)) {
             if (status == "000") {
                 status = "00+";
@@ -163,6 +163,7 @@ int main(int argc, char* argv[]) {
     bool f = false;
     bool t = false;
     bool c = false;
+    bool a = false;
 
     set<string> check_set = {"!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", "0",
                              "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?", "@",
@@ -172,10 +173,11 @@ int main(int argc, char* argv[]) {
     
     CLI::App app {"MLT-3 Encoding"};
     app.add_option("input_characters", input_chars,
-         "Only given characters will be random times send over with MLT-3.    Example: \"./mlt3send asdf\"")->check(CLI::IsMember(check_set))->ignore_case();
+         "Given characters will be random times send over with MLT-3 (Only ASCII character).    Example: \"./mlt3send asdf\"")->check(CLI::IsMember(check_set))->ignore_case();
     app.add_flag("-f,--file", f, "Writes the ouput of MLT-3 process an ASCII-Doc and outputs it on console as well");
     app.add_flag("-t,--time", t, "Time measurement of sending until receiving data");
     app.add_flag("-c,--color", c, "Standard table output with color");
+    app.add_flag("-a,--allowed", a , "Show allowed character for input");
 
     //NOTE ADD WHICH ASCII CHARACTERS ARE ALLOWED! 33 until 129 in dec!
     cout << rang::fg::red;
@@ -188,13 +190,6 @@ int main(int argc, char* argv[]) {
     cout << rang::style::reset;
 
     Queue<string> q{}; //create queue
-
-    // this block is for deleting double characters from input string
-    //START
-    sort(input_chars.begin(), input_chars.end()); 
-    auto res = unique(input_chars.begin(), input_chars.end());
-    input_chars = string(input_chars.begin(), res);
-    //END
 
     Table main_table;   //create table for output
 
