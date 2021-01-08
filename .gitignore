@@ -4,6 +4,7 @@ build/
 *.doc
 *.pdf
 .vscode
+.synctex.gz
 
 # Compiled Object files
 *.slo
