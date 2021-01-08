@@ -158,7 +158,6 @@ void decode(Queue<string>& queue, Table& tab) {
 }
 
 int main(int argc, char* argv[]) {
-    
     string input_chars;
     string input_chars_o;
     bool f = false;
@@ -173,7 +172,7 @@ int main(int argc, char* argv[]) {
          "Given characters will be random times send over with MLT-3    Example: \"./mlt3send asdf\"");
     app.add_option("-o,--filechar", input_chars_o, "Writes the ouput of MLT-3 process with given characters as markdown in a file");
     app.add_flag("-f,--file", f, "Writes the ouput of MLT-3 process as markdown in a file");
-    app.add_flag("-t,--time", t, "Time measurement of sending until receiving data");
+    app.add_flag("-t,--time", t, "Starts new process and measures time of sending until receiving data");
     app.add_flag("-c,--color", c, "Standard table output with color");
     app.add_flag("-a,--allowed", a , "Show allowed character for input");
 
@@ -192,7 +191,7 @@ int main(int argc, char* argv[]) {
         tmp_argv_str += argv[i];
     }
     if (tmp_argv_str.find_first_not_of(check) != string::npos) {
-        cout << "Not all given characters are allowed.\nAdd -a, to see all allowed characters or -h for more help\n";
+        cout << "Not all given characters are allowed!\nTry option -a, to see all allowed characters or -h for more help\n";
         logger->error("Program terminated because of parse exception: {0}", "Given characters are not all allowed");
         exit(1);
     }
@@ -272,6 +271,7 @@ int main(int argc, char* argv[]) {
             logger->info(tmp.append(t_measure));
         }
     } else {
+        cout << rang::fg::magenta << "\n\n Allowed values are: \n\n" << rang::style::reset;
         Table ascii_table;
         ascii_table.add_row({"Character", "ASCII Value"});
         int cnt = 33;
@@ -279,6 +279,8 @@ int main(int argc, char* argv[]) {
         while (cnt < 127) {
             tmp = char(cnt);
             ascii_table.add_row({tmp, to_string(cnt)});
+            cnt++;
         }
+        cout << ascii_table << "\n";
     }
 }
