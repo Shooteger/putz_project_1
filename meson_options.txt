@@ -18,5 +18,5 @@ option('sml_include_dir', type : 'string', value : '', description : 'the dir co
 option('tabulate_include_dir', type : 'string', value : '/home/maurice/Documents/tabulate/single_include/', description : 'the dir containing tabulate.hpp')
 option('taskflow_include_dir', type : 'string', value : '', description : 'the dir containing the dir taskflow')
 option('toml_include_dir', type : 'string', value : '', description : 'the include dir of toml++')
-option('tfile_include_dir', type : 'string', value : '', description : 'the dir containing tfile.h')
+option('tfile_include_dir', type : 'string', value : '/home/maurice/Documents/tfile/include/tfile/', description : 'the dir containing tfile.h')
 option('sqlite_orm_include_dir', type : 'string', value : '', description : 'the dir containing sqlite_orm.h')

@@ -160,98 +160,125 @@ void decode(Queue<string>& queue, Table& tab) {
 int main(int argc, char* argv[]) {
     
     string input_chars;
+    string input_chars_o;
     bool f = false;
     bool t = false;
     bool c = false;
     bool a = false;
 
-    set<string> check_set = {"!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", "0",
-                             "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?", "@",
-                             "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
-                             "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "[", "\\", "]", "^", "_", "´",
-                             "{", "}", "|", "~"};
+    string check = " !\"#$%&'()*+,-./0123456789:;<=>?@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890[]^_´{}|~\\";
     
     CLI::App app {"MLT-3 Encoding"};
     app.add_option("input_characters", input_chars,
-         "Given characters will be random times send over with MLT-3 (Only ASCII character).    Example: \"./mlt3send asdf\"")->check(CLI::IsMember(check_set))->ignore_case();
-    app.add_flag("-f,--file", f, "Writes the ouput of MLT-3 process an ASCII-Doc and outputs it on console as well");
+         "Given characters will be random times send over with MLT-3    Example: \"./mlt3send asdf\"");
+    app.add_option("-o,--filechar", input_chars_o, "Writes the ouput of MLT-3 process with given characters as markdown in a file");
+    app.add_flag("-f,--file", f, "Writes the ouput of MLT-3 process as markdown in a file");
     app.add_flag("-t,--time", t, "Time measurement of sending until receiving data");
     app.add_flag("-c,--color", c, "Standard table output with color");
     app.add_flag("-a,--allowed", a , "Show allowed character for input");
 
     //NOTE ADD WHICH ASCII CHARACTERS ARE ALLOWED! 33 until 129 in dec!
-    cout << rang::fg::red;
+    cout << rang::fg::cyan;
     try {
         CLI11_PARSE(app, argc, argv);
     } catch(const CLI::ParseError &e) {
         logger->error("Program terminated because of parse exception: {0}", e.what());
         return app.exit(e);
     }
+
+    cout << rang::fg::red;
+    string tmp_argv_str;
+    for (int i = 0; i < argc; ++i) {
+        tmp_argv_str += argv[i];
+    }
+    if (tmp_argv_str.find_first_not_of(check) != string::npos) {
+        cout << "Not all given characters are allowed.\nAdd -a, to see all allowed characters or -h for more help\n";
+        logger->error("Program terminated because of parse exception: {0}", "Given characters are not all allowed");
+        exit(1);
+    }
+
     cout << rang::style::reset;
 
-    Queue<string> q{}; //create queue
+    if (!a) {
+        Queue<string> q{}; //create queue
 
-    Table main_table;   //create table for output
+        Table main_table;   //create table for main output
 
-    main_table.add_row({"ASCII data to send", "Binary", "MTL-3", 
-                        "Binary encoded from MLT-3", "Data received in ASCII"});
+        main_table.add_row({"ASCII data to send", "Binary", "MTL-3", 
+                            "Binary encoded from MLT-3", "Data received in ASCII"});
 
-    if (c) {          
-        main_table.format().corner_color(Color::magenta).border_color(Color::magenta)
-        .font_style({FontStyle::bold, FontStyle::underline}).font_color(Color::cyan);
-    }
-
-    auto start = chrono::steady_clock::now();   //starts time measurement
-    //thread to send and push data to queue gets started
-    thread sender{send_data_tf, random_tf(ref(main_table), input_chars), ref(q), ref(main_table)};  //ref() for rvalue error in std::thread because its given by reference
-    sender.join();
-
-    //thread to decode and pop data from queue gets started
-    thread receiver{decode, ref(q), ref(main_table)};
-    receiver.join();
-    auto end = chrono::steady_clock::now();   //ends time measurement
-
-    if (!f) {   //if not -f flag
-        cout << main_table << "\n";
-        logger->info("table printed");
-    }
-    if (f) {    // if f, then asciidoc output on console and write into file
-        MarkdownExporter exporter;
-        //AsciiDocExporter exporter;
-        //string asciidoc = exporter.dump(main_table);
-        string mkdoc = exporter.dump(main_table);
-
-        string tmp_path = home.append("/Desktop/mlt3.mkd");
-        ofstream file;
-        file.open(tmp_path, ios::out | ios::trunc | ios_base::binary);
-        if (!file) {
-            string err_msg = "Could not open file: ";
-            logger->error(err_msg.append(tmp_path));
-            cout << "Could not create file at path: " << tmp_path << "\n";
-        } else {
-            cout << "\n" << mkdoc;
-            //asciidoc.erase(remove(asciidoc.begin(), asciidoc.end(), '\00'), asciidoc.end());
-            file << mkdoc;
-            file.close();
-            cout << rang::fg::magenta << "\n\n[NOTE]\nThe result is saved to the location: "
-                 << rang::style::underline << rang::fg::cyan << tmp_path
-                 << rang::style::reset << rang::fg::magenta << "\nIt is formated as markdown.\n" << rang::style::reset;
-            /*
-            cout << rang::fg::magenta << "\n\n[NOTE]\nYou can render your ASCII Document with an ASCII Rendertool or online at: \n"
-                 << rang::style::underline << rang::fg::cyan <<"https://www.tutorialspoint.com/online_asciidoc_editor.php\n"
-                 << rang::style::reset << rang::fg::magenta << "\nYou can copy and paste the output on the console or the content of the file into the page"
-                 << "on the left side of the window and then press \"preview\", to see the rendered table.\n\n" 
-                 << rang::style::reset;
-            */
-            logger->info("write in file succesfull");
+        if (c) {          
+            main_table.format().corner_color(Color::magenta).border_color(Color::magenta)
+            .font_style({FontStyle::bold}).font_color(Color::cyan);
         }
-    }
 
-    if (t) {
-        string t_measure = to_string(chrono::duration_cast<chrono::nanoseconds>(end - start).count());
-        cout << "\nElapsed time in nanoseconds  : " << t_measure << " ns\n";
-        cout << "Elapsed time in microseconds : " << chrono::duration_cast<chrono::microseconds>(end - start).count() << " µs\n";
-        string tmp = "time of threads elapsed: ";
-        logger->info(tmp.append(t_measure));
+        if (input_chars_o.size() > 0) {
+            f = true;
+            input_chars = input_chars_o;
+        }
+
+        auto start = chrono::steady_clock::now();   //starts time measurement
+        //thread to send and push data to queue gets started
+        thread sender{send_data_tf, random_tf(ref(main_table), input_chars), ref(q), ref(main_table)};  //ref() for rvalue error in std::thread because its given by reference
+        sender.join();
+
+        //thread to decode and pop data from queue gets started
+        thread receiver{decode, ref(q), ref(main_table)};
+        receiver.join();
+        auto end = chrono::steady_clock::now();   //ends time measurement
+
+        if (!f) {   //if not -f flag
+            cout << main_table << "\n";
+            logger->info("table printed");
+        }
+        if (f) {    // if f, then asciidoc output on console and write into file
+            MarkdownExporter exporter;
+            //AsciiDocExporter exporter;
+            //string asciidoc = exporter.dump(main_table);
+            string mkdoc = exporter.dump(main_table);
+
+            string tmp_path = home.append("/Desktop/mlt3.mkd");
+            ofstream file;
+            file.open(tmp_path, ios::out | ios::trunc | ios_base::binary);
+            if (!file) {
+                string err_msg = "Could not open file: ";
+                logger->error(err_msg.append(tmp_path));
+                cout << "Could not create file at path: " << tmp_path << "\n";
+            } else {
+                //cout << "\n" << mkdoc;
+                //asciidoc.erase(remove(asciidoc.begin(), asciidoc.end(), '\00'), asciidoc.end());
+                file << mkdoc;
+                file.close();
+                cout << rang::fg::magenta << "\n[NOTE]\nThe result is saved to the location: "
+                    << rang::style::underline << rang::fg::cyan << tmp_path
+                    << rang::style::reset << rang::fg::magenta << "\nIt is formated as markdown.\n\n" << rang::style::reset;
+                
+                /*  FOR ASCII Doc output
+                cout << rang::fg::magenta << "\n\n[NOTE]\nYou can render your ASCII Document with an ASCII Rendertool or online at: \n"
+                    << rang::style::underline << rang::fg::cyan <<"https://www.tutorialspoint.com/online_asciidoc_editor.php\n"
+                    << rang::style::reset << rang::fg::magenta << "\nYou can copy and paste the output on the console or the content of the file into the page"
+                    << "on the left side of the window and then press \"preview\", to see the rendered table.\n\n" 
+                    << rang::style::reset;
+                */
+                logger->info("write in file succesful");
+            }
+        }
+
+        if (t) {
+            string t_measure = to_string(chrono::duration_cast<chrono::nanoseconds>(end - start).count());
+            cout << "\nElapsed time in nanoseconds  : " << t_measure << " ns\n";
+            cout << "Elapsed time in microseconds : " << chrono::duration_cast<chrono::microseconds>(end - start).count() << " µs\n";
+            string tmp = "time of threads elapsed: ";
+            logger->info(tmp.append(t_measure));
+        }
+    } else {
+        Table ascii_table;
+        ascii_table.add_row({"Character", "ASCII Value"});
+        int cnt = 33;
+        string tmp;
+        while (cnt < 127) {
+            tmp = char(cnt);
+            ascii_table.add_row({tmp, to_string(cnt)});
+        }
     }
 }

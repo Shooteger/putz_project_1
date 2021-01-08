@@ -4,7 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**", "/home/maurice/Documents/", "/home/maurice/Documents/spdlog/include/",
-                "/home/maurice/Documents/tabulate/single_include/", "/home/maurice/Documents/rang/include/"
+                "/home/maurice/Documents/tabulate/single_include/", "/home/maurice/Documents/rang/include/",
+                "/home/maurice/Documents/tfile/include/tfile/"
 
             ],
             "defines": [],
