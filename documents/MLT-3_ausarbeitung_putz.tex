@@ -2,7 +2,6 @@
 \usepackage{graphicx}
 \graphicspath{ {./images/} }
 \usepackage{parskip}
-
 \renewcommand{\figurename}{Abb.}
 
 \begin{document}
@@ -17,7 +16,7 @@ NVS- Projekt 2020/21, 5AHIF
 
 	Maurice Putz\\
     }
-    \includegraphics[width=6cm]{mlt3logo.png} % also works with logo.pdf
+    \includegraphics[width=6cm]{mlt3logo.png}
     \vskip6cm
  8. Jänner 2021\\
 \end{titlepage}
@@ -36,7 +35,7 @@ den binären teilen besteht, übertragen. Die MLT-3 codierte Datenfolge wird nun
 übersetzt, danach ins dezimale und schlussendlich wieder als ACII-Zeichen dekodiert ausgegeben.
 
 Das Programm gibt diesen Vorgang standardgemäß auf der Konsole als Tabelle formatiert aus. Es exisiteren weitere
-Optionen und Funktionen, welche in Abschnitt "Funktionen und Optionen", genauer beschrieben sind.
+Optionen und Funktionen, welche in Abschnitt "Bedienanleitung", genauer beschrieben sind.
 
 \subsection{MLT-3 Zusammenfassung}
 
@@ -69,7 +68,29 @@ Reihenfolge:
 
 Diese vier Schritte wiederholen sich jedes Mal bei einer logischen Eins in genau dieser Reihenfolge.
 
-\section{Funktionen und Optionen}
+\section{Bedienanleitung}
+
+\begin{center}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=16cm]{output2.png}
+    \caption{Ausgabe mit Aufruf .mlt3send dsad}
+\end{figure}
+\end{center}
+
+Durch den bloßen Aufruf des Programms, wie zum Beispiel \underline{./mlt3send}. Wird der Prozess ohne speziellen Funktionen
+gestartet. Eine zufällige Einzahl von ASCII-Zeichen wird zufällig oft (zwischen 1 und 127 mal) auf der Konsole als Tabelle formatiert ausgegben.
+Die Tabelle zeigt das gewählte ASCII Zeichen, die binäre Kodierung dazu, dann den MLT-3 Übertrag, dann diesen als binär wieder zurückübersetzt
+und schließlich in der letzten Spalte, das dekodeirte ASCII-Zeichen wieder. (Abb. 2)
+
+Wenn mann beim Aufruf den Programms, wie zum Beispiel  \underline{./mlt3send dsad} eingibt. Werden die einzelnen Zeichen hinter dem Programmnamen
+überprüft, ob sie in ASCII enthalten sind und im positiven Fall, wird das Programm genau wie bei einem einfachen Aufruf gestartet. Nur diesmal werden
+bloß die ASCII-Zeichen, welche hinter dem Programmnamen stehen zufällig oft (zwischen 1 und 127 mal) übertragen. \\
+
+\begin{itemize}
+	\item \underline{Eingabe:} ./mlt3send dsad
+	\item \underline{Ausgabe:} [Siehe Abb. 2]\\
+\end{itemize}
 
 \begin{center}
 \begin{figure}[h]
@@ -80,10 +101,10 @@ Diese vier Schritte wiederholen sich jedes Mal bei einer logischen Eins in genau
 \end{center}
 
 Option \textbf{-h,--help}:\\
-Zeigt die Hilfe für das Programm an, liefert das Menü wie in Abb. 2 zurück.
+Zeigt die Hilfe für das Programm an, liefert das Menü wie in Abb. 3 zurück.
 \begin{itemize}
 	\item \underline{Eingabe:} ./mlt3send -h
-	\item \underline{Ausgabe:} [Siehe Abb. 2]\\
+	\item \underline{Ausgabe:} [Siehe Abb. 3]\\
 \end{itemize}
 
 Option \textbf{-o,--filechar TEXT}:\\
@@ -117,21 +138,64 @@ Einheiten ist, dass manchmal, wenn zufällig und ein Zeichen übertragen wird, o
 einer Mikrosekunde passiert.
 
 Die gemessene Zeit wird mit Start des Sende-Threads angefangen, und endet mit der Verarbeitung aller Daten durch den Empfängerthread. Die Ausgabe in die Konsole oder
-das schreibeun in eine Datei wird \underline{nicht} mitgemessen.
+das schreiben in eine Datei wird \underline{nicht} mitgemessen, jedoch die Erstellung der Tabelle für die weitere Ausgabe schon.
+
+Beispiel: 
+\begin{itemize}
+	\item \underline{Eingabe:} ./mlt3send -t
+	\item \underline{Ausgabe:}
+
+(Tabelle mit den Werten wie in Abb. 2)\\
+.\\
+.\\
+.\\
+Elapsed time in nanoseconds  : 1058770 ns\\
+Elapsed time in microseconds : 1058 µs\\
+\end{itemize}
 
 Flag \textbf{-c,--color}:\\
-Startet das Programm mit zufällig gewählten ASCII-Zeichen
+Startet das Programm normale mit zufällig gewählten ASCII Zeichen und gibt die Tabelle färbig aus.\\
+\underline{Achtung:} kann je nach Terminal-Anwendung und Computer zu schlechter Performance bei der Ausgabe führen. Die Geschwindigkeit der Übertragung wird
+allerdings nicht beeinflusst.
+
+\begin{itemize}
+	\item \underline{Eingabe:} ./mlt3send -c
+	\item \underline{Ausgabe:} Tabelle wie in Abb. 2 nur farbig\\
+\end{itemize}
 
 Flag \textbf{-a,--allowed}:\\
-Nope
+Damit kann man alle erlaubten ASCII Zeichen für das Programm sich anzeigen lassen. Einige ASCII Zeichen wie zum Beispiel 1 - SOH (start of heading), in C++ nicht über die
+Kommandozeile gewünscht verarbeitet werden kann. Alle Zahlen und Buchstaben und die meisten welche in ASCII enthalten sind, werden unterstützt.
 
+\begin{itemize}
+	\item \underline{Eingabe:} ./mlt3send -a
+	\item \underline{Ausgabe:} Tabelle, wo auf der linken Seite Dezimal-Werte stehen und auf der rechten Seite die jeweiligen zugerhörigen ASCII Zeichen.\\
+\end{itemize}
+
+\section{Umsetzung}
+Das Programm legt nach dem Parsen ein Objekt, einer selbst erstellten Klasse einer Thread-Safe Queue an. Anfangs war nicht sicher welchen Typ der queue unterstützen sollte,
+demnach wurden templates verwendet. Die Implementierung der Thread-Safe Queue Klasse befindet sich im \underline{indlude} Verzeichnis in der Datei \underline{queue.h}. Sie
+wurde im Header definiert, da die Verwendung von templates keine Aufteilung der Implementation in eine .cpp Datei zuließ.
+
+Danach wird ein Thread \underline{sender} erstellt:
+%thread sender{send_data_tf, random_tf(ref(main_table), input_chars), ref(q), ref(main_table)};
+
+\underline{}
+
+\subsection{Verwendete Externe Klassen}
+\begin{itemize}
+	\item \underline{rang-library:} für die farbige Ausgabe der Tabelle
+	\item \underline{CLI11-library:} für die Verarbeitung von Eingabe und Options- und Funktionsargumenten
+	\item \underline{spdlog-library:} für das Logging
+	\item \underline{tabulate-library:} für die Formatierung der Ausgabe als Tabelle
+\end{itemize}
 
 
 \section{Quellen}
 
 \begin{itemize}
 	\item https://de.wikipedia.org/wiki/MLT-3-Code
-	\item https://de.wikipedia.org/wiki/Tern%C3%A4res_Signal
+	\item https://de.wikipedia.org/wiki/Ternäres\_Signal
 	\item Folie 21. "Encoding and Decoding" aus dem NVS Unterricht
 \end{itemize}
 
