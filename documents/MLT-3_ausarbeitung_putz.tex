@@ -2,7 +2,27 @@
 \usepackage{graphicx}
 \graphicspath{ {./images/} }
 \usepackage{parskip}
+\usepackage{listings}
+\usepackage{color}
+\usepackage[utf8]{inputenc}
+
 \renewcommand{\figurename}{Abb.}
+\renewcommand\lstlistingname{Quelltext}
+
+\lstset{ 
+	language=C++,
+	basicstyle=\small\sffamily,
+	numbers=left,
+ 	numberstyle=\tiny,
+	frame=tb,
+	tabsize=4,
+	columns=fixed,
+	showstringspaces=false,
+	showtabs=false,
+	keepspaces,
+	commentstyle=\color{green},
+	keywordstyle=\color{blue}
+}
 
 \begin{document}
 
@@ -178,9 +198,75 @@ demnach wurden templates verwendet. Die Implementierung der Thread-Safe Queue Kl
 wurde im Header definiert, da die Verwendung von templates keine Aufteilung der Implementation in eine .cpp Datei zuließ.
 
 Danach wird ein Thread \underline{sender} erstellt:
-%thread sender{send_data_tf, random_tf(ref(main_table), input_chars), ref(q), ref(main_table)};
+\begin{lstlisting}
+thread sender{send_data_tf, random_tf(ref(main_table),
+		     input_chars), ref(q), ref(main_table)};
+\end{lstlisting}
 
-\underline{}
+Dieser Thread ruft eine Funktion:
+\begin{lstlisting}
+void send_data_tf(vector<int> data_to_send,
+				Queue<string>& queue, Table& tab)
+\end{lstlisting}
+
+Diese Funktion bekommt einen vector vom Typ \underline{int}, eine Referenz zur vorhin angelegten Queue vom Typ \underline{string} und eine Referenz zu einer vorhin
+angelegten Tabelle aus der externen Bibliothek \underline{tabulator.h}. Die Funktion liefert nichts zurück, der vector enthält die zufällig erstellten ASCII-Zeichen in Dezimaldarstellung.
+Diese integer, welche einen Wert zwischen 33 und 127 haben können (alle zulässigen ASCII-Zeichen), werden in der Funktion zuerst auf einen Hilfs-vector in ihrer binären Darstellung
+gepusht und dann mittels einer Funktion als MLT-3 kodiert auf den Queue als \underline{string} gepusht. 
+
+Die Funktion dazu:
+\begin{lstlisting}
+string convert_to_mlt3(bitset<8> binary_block)
+\end{lstlisting}
+
+Diese liefert einen \underline{string} zurück und benötigt eine bitset mit 8 Stellen als Parameter. In der Funktion send\_data\_tf(...), wird diese Funktion hier für jedes Zeichen
+einmal Aufgerufen. Der zurückgelieferte string, welcher zum Beispiel so aussehen kann: \underline{0+00---0}, wird auf die Queue gepusht.
+
+Der Thread \underline{sender} benutzt um die Werte für den ersten Paramter Funktion send\_data\_tf(...) zu bekommen selbst auch eine Funktion:
+\begin{lstlisting}
+vector<int> random_tf(Table& tab, string allowed="")
+\end{lstlisting}
+
+Diese Funktion liefert den vector vom Typ \underline{int} zurück welcher in der Funktion send\_data\_tf(...) benötigt wird. Sie bekommt selbst eine Referanz auf die
+Tabelle für die Ausgabe später mit und einen \underline{string} names "allowed". Dieser ist per default ein Leerstring. Falls dem Programm beim Start entsprechende Zeichen mitgeben
+werden, wird nur aus dieser Zeichenmenge dann eine zufällige Anzahl davon in den Vektor eingefügt. Insgesamt können insgesamt Zeichen zwischen 1 und 127 mal in den Vector eingefügt
+werden, dies hat keinen speziellen Grund, man könnte theoretisch das obere Limit an Zahlen auch bis zum maximalen vector-Größe Limit setzen. Jedoch wäre das nicht sinnvoll, da die Ausgabe
+in der Kommandozeile sehr lange dauern würde und andere Probleme mit dem Speicher auftreten würden, bei Interesse sind dazu weiter unten Links. 
+
+Die maximale vector Größe könnte man
+wie folgt feststellen:
+\begin{lstlisting}
+std::vector<int> myvector;
+std::cout << "max_size: " << myvector.max_size();
+
+//Moegliche Ausgabe:
+
+max_size: 1073741823
+\end{lstlisting}
+
+
+Nach diesem Prozess wird ein andere Thread gestartet:
+\begin{lstlisting}
+thread receiver{decode, ref(q), ref(main_table)};
+\end{lstlisting}
+
+Dieser Thread namens \underline{receiver}, ruft folgende Funktion auf:
+\begin{lstlisting}
+void decode(Queue<string>& queue, Table& tab)
+\end{lstlisting}
+Diese Funktion decode(...), liefert nichts zurück. Ihre Aufgabe ist, den Queue in einer while-Schleife abzuarbeiten, jedes Element zuerst von MLT-3 mittels einer Hilfsfunktion 
+ins binäre zurück, und dann schließlich als ASCII-Zeichen zu übersetzen.
+
+Die Hilfsfunktion:
+\begin{lstlisting}
+decrypt_from_mlt3(string mlt3_data, Table& tab, int table_col_cnt)
+\end{lstlisting}
+
+Sie wird für jedes Element im Qeue einmal aufgerufen, der Aufruf geschieht in der vorherig dargestellten Funktion \underline{decode(...)}. Sie bekommt beim Aufruf die Referent auf die
+Tabelle von der Bibliothek \underline{tabulator.h} mit, damit sie die Werte in die jeweillige Spalte und Reihe eintragen kann, da das Element nach der Abarbeitung vom Queue gelöscht wird.
+Weiters bekommt die Funktion natürlich einen \underline{string} names \underline{mlt\_data} mit, welchen sie zuerst ins binäre, und dann mittels einem \underline{sstringstream} aus 
+der standard-Bibiothek, in eine bitset mit acht Stellen unwandelt und schließlich zurück in eine ASCII-Zeichen.
+
 
 \subsection{Verwendete Externe Klassen}
 \begin{itemize}
@@ -196,6 +282,8 @@ Danach wird ein Thread \underline{sender} erstellt:
 \begin{itemize}
 	\item https://de.wikipedia.org/wiki/MLT-3-Code
 	\item https://de.wikipedia.org/wiki/Ternäres\_Signal
+	\item https://www.cplusplus.com/reference/vector/vector/max\_size/
+	\item Link zu Limit von vektoren: https://stackoverflow.com/questions/32316346/limit-on-vectors-in-c
 	\item Folie 21. "Encoding and Decoding" aus dem NVS Unterricht
 \end{itemize}
 
