@@ -1,7 +1,7 @@
 # putz_project_1
 Erstes NVS Projekt, 5AHIF
 
-##Beschreibung
+## Beschreibung
 
 Der MLT-3 Simulator dient einer Simulierung der Leitungskodierung MLT-3. Vom Sender werde zuerst ASCII-Zeichen 
 ins Dezimal System ungewandelt, dann weiter in binären Code und dann mittels der MLT-3 Signalform welche aus
