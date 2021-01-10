@@ -10,3 +10,7 @@ https://online.visual-paradigm.com
 http://cpppatterns.com/patterns/pass-values-between-thread.html
 
 Libaries:
+https://github.com/p-ranav/tabulate
+https://github.com/CLIUtils/CLI11
+https://github.com/agauniyal/rang
+https://github.com/gabime/spdlog
