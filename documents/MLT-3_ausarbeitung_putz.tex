@@ -52,7 +52,7 @@ NVS- Projekt 2020/21, 5AHIF
 
 Der MLT-3 Simulator dient einer Simulierung der Leitungskodierung MLT-3. Vom Sender werde zuerst ASCII-Zeichen 
 ins Dezimal System ungewandelt, dann weiter in binären Code und dann mittels der MLT-3 Signalform welche aus
-den binären teilen besteht, übertragen. Die MLT-3 codierte Datenfolge wird nun beim Empfänger zurück ins binäre System
+den binären Teilen besteht, übertragen. Die MLT-3 codierte Datenfolge wird nun beim Empfänger zurück ins binäre System
 übersetzt, danach ins dezimale und schlussendlich wieder als ACII-Zeichen dekodiert ausgegeben.
 
 Das Programm gibt diesen Vorgang standardgemäß auf der Konsole als Tabelle formatiert aus. Es exisiteren weitere
@@ -62,10 +62,10 @@ Optionen und Funktionen, welche in Abschnitt "Bedienanleitung", genauer beschrie
 
 MLT steht für Multilevel Transmission Encoding, die drei am Ende steht für "3 levels", also die drei Spannungsformen welche eine
 MLT-3 kodierte Datenfolge haben kann. Diese drei Spannungen, was die Folge zu einem Ternären Signal macht,
-werden in einer Folge meisten als +, 0 und - Dargestellt, wie man gut in Abb. 1 erkennen kann.
+werden in einer Folge meisten als +, 0 und - dargestellt, wie man gut in Abb. 1 erkennen kann.
 
 MLT-3 ändert den Datenstrom bei jeder logischen Eins, bei einer logischen Null ändert sich der Zustand der Leitung nicht und das
-gleiche Zeichen wird einfach ein weiteres Mal übernommen. Die bringt vor allem der Vorteil, dass die Kodierung viel weniger Bandbreite als
+gleiche Zeichen wird einfach ein weiteres Mal übernommen. Dies bringt vor allem der Vorteil, dass die Kodierung viel weniger Bandbreite als
 andere wie zum Beispiel NRZ (No Return to Zero) benötigt, da eben nur bei einer Änderung mit einer logischen Eins, die Spannung geändert wird.
 
 \begin{center}
@@ -99,12 +99,12 @@ Diese vier Schritte wiederholen sich jedes Mal bei einer logischen Eins in genau
 \end{figure}
 \end{center}
 
-Durch den bloßen Aufruf des Programms, wie zum Beispiel \underline{./mlt3send}. Wird der Prozess ohne speziellen Funktionen
-gestartet. Eine zufällige Einzahl von ASCII-Zeichen wird zufällig oft (zwischen 1 und 127 mal) auf der Konsole als Tabelle formatiert ausgegben.
+Durch den bloßen Aufruf des Programms, wie zum Beispiel \underline{./mlt3send}, wird der Prozess ohne speziellen Funktionen
+gestartet. Eine zufällige Anzahl von ASCII-Zeichen wird zufällig oft (zwischen 1 und 127 mal) auf der Konsole als Tabelle formatiert ausgegben.
 Die Tabelle zeigt das gewählte ASCII Zeichen, die binäre Kodierung dazu, dann den MLT-3 Übertrag, dann diesen als binär wieder zurückübersetzt
 und schließlich in der letzten Spalte, das dekodeirte ASCII-Zeichen wieder. (Abb. 2)
 
-Wenn mann beim Aufruf den Programms, wie zum Beispiel  \underline{./mlt3send dsad} eingibt. Werden die einzelnen Zeichen hinter dem Programmnamen
+Wenn mann beim Aufruf des Programms, wie zum Beispiel  \underline{./mlt3send dsad} eingibt, werden die einzelnen Zeichen hinter dem Programmnamen
 überprüft, ob sie in ASCII enthalten sind und im positiven Fall, wird das Programm genau wie bei einem einfachen Aufruf gestartet. Nur diesmal werden
 bloß die ASCII-Zeichen, welche hinter dem Programmnamen stehen zufällig oft (zwischen 1 und 127 mal) übertragen. \\
 
@@ -129,8 +129,8 @@ Zeigt die Hilfe für das Programm an, liefert das Menü wie in Abb. 3 zurück.
 \end{itemize}
 
 Option \textbf{-o,--filechar TEXT}:\\
-Startet das Programm und schreibt das Ergebnis als markdown in eine Datei, Speicherort der Datei wird nach Aufruf auf der Konsole ausgegeben.
-Erwartet ASCII kodierbare Character als eingabe.
+Startet das Programm und schreibt das Ergebnis als Markdown in eine Datei, Speicherort der Datei wird nach Aufruf auf der Konsole ausgegeben.
+Erwartet ASCII kodierbare Zeichen als Eingabe.
 Beispiel: 
 \begin{itemize}
 	\item \underline{Eingabe:} ./mlt3send -o asdf
@@ -142,7 +142,7 @@ It is formated as markdown.\\
 \end{itemize}
 
 Flag \textbf{-f,--file}:\\
-Startet das Programm mit zufällig gewählten ASCII-Zeichen und schreibt sie als mardown in eine Datei, Speicherort der Datei wird nach Aufruf auf der Konsole ausgegeben.
+Startet das Programm mit zufällig gewählten ASCII-Zeichen und schreibt sie als Markdown in eine Datei, Speicherort der Datei wird nach Aufruf auf der Konsole ausgegeben.
 Beispiel: 
 \begin{itemize}
 	\item \underline{Eingabe:} ./mlt3send -f
@@ -194,9 +194,9 @@ Kommandozeile gewünscht verarbeitet werden kann. Alle Zahlen und Buchstaben und
 \end{itemize}
 
 \section{Umsetzung}
-Das Programm legt nach dem Parsen ein Objekt, einer selbst erstellten Klasse einer Thread-Safe Queue an. Anfangs war nicht sicher welchen Typ der queue unterstützen sollte,
-demnach wurden templates verwendet. Die Implementierung der Thread-Safe Queue Klasse befindet sich im \underline{indlude} Verzeichnis in der Datei \underline{queue.h}. Sie
-wurde im Header definiert, da die Verwendung von templates keine Aufteilung der Implementation in eine .cpp Datei zuließ.
+Das Programm legt nach dem Parsen ein Objekt, einer selbst erstellten Klasse einer Thread-Safe Queue an. Anfangs war nicht sicher welchen Typ der Queue unterstützen sollte,
+demnach wurden Templates verwendet. Die Implementierung der Thread-Safe Queue Klasse befindet sich im \underline{indlude} Verzeichnis in der Datei \underline{queue.h}. Sie
+wurde im Header definiert, da die Verwendung von Templates keine Aufteilung der Implementation in eine .cpp Datei zuließ.
 
 Danach wird ein Thread \underline{sender} erstellt:
 \begin{lstlisting}
@@ -221,17 +221,17 @@ string convert_to_mlt3(bitset<8> binary_block)
 \end{lstlisting}
 
 Diese liefert einen \underline{string} zurück und benötigt eine bitset mit 8 Stellen als Parameter. In der Funktion send\_data\_tf(...), wird diese Funktion hier für jedes Zeichen
-einmal Aufgerufen. Der zurückgelieferte string, welcher zum Beispiel so aussehen kann: \underline{0+00---0}, wird auf die Queue gepusht.
+einmal aufgerufen. Der zurückgelieferte string, welcher zum Beispiel so aussehen kann: \underline{0+00---0}, wird auf die Queue gepusht.
 
 Der Thread \underline{sender} benutzt um die Werte für den ersten Paramter Funktion send\_data\_tf(...) zu bekommen selbst auch eine Funktion:
 \begin{lstlisting}
 vector<int> random_tf(Table& tab, string allowed="")
 \end{lstlisting}
 
-Diese Funktion liefert den vector vom Typ \underline{int} zurück welcher in der Funktion send\_data\_tf(...) benötigt wird. Sie bekommt selbst eine Referanz auf die
-Tabelle für die Ausgabe später mit und einen \underline{string} names "allowed". Dieser ist per default ein Leerstring. Falls dem Programm beim Start entsprechende Zeichen mitgeben
-werden, wird nur aus dieser Zeichenmenge dann eine zufällige Anzahl davon in den Vektor eingefügt. Insgesamt können insgesamt Zeichen zwischen 1 und 127 mal in den Vector eingefügt
-werden, dies hat keinen speziellen Grund, man könnte theoretisch das obere Limit an Zahlen auch bis zum maximalen vector-Größe Limit setzen. Jedoch wäre das nicht sinnvoll, da die Ausgabe
+Diese Funktion liefert den Vektor vom Typ \underline{int} zurück welcher in der Funktion send\_data\_tf(...) benötigt wird. Sie bekommt selbst eine Referenz auf die
+Tabelle für die Ausgabe später mit und einen \underline{string} names "allowed". Dieser ist per default ein Leerstring. Falls dem Programm beim Start entsprechende Zeichen mitgegeben
+werden, wird nur aus dieser Zeichenmenge dann eine zufällige Anzahl davon in den Vektor eingefügt. Insgesamt können insgesamt Zeichen zwischen 1 und 127 mal in den Vektor eingefügt
+werden, dies hat keinen speziellen Grund, man könnte theoretisch das obere Limit an Zahlen auch bis zum maximalen Vektor-Größe Limit setzen. Jedoch wäre das nicht sinnvoll, da die Ausgabe
 in der Kommandozeile sehr lange dauern würde und andere Probleme mit dem Speicher auftreten würden, bei Interesse sind dazu weiter unten Links. 
 
 Die maximale vector Größe könnte man
